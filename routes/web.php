@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::post('/07byry0vq709ewo7tyrq978tr6732', function () {
+    Telegram::commandsHandler(true);
+    return 'ok';
 });
