@@ -12,27 +12,35 @@ class GameService
     {
         $size = 10;
         $this->cells = array_fill(0, $size, array_fill(0, $size, Cell::EMPTY));
+    }
 
-        for ($y = 0; $y < count($this->cells); $y++) {
-            for ($x = 0; $x < count($this->cells[$y]); $x++) {
-                if (
-                    $y <> 0 && $y <> count($this->cells) - 1 &&
-                    $x <> 0 && $x <> count($this->cells[$y]) - 1
-                ) continue;
+    public function InitEmpty(): void
+    {
+        $baseGame = "🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥\n";
 
-                $this->cells[$y][$x] = Cell::WALL;
+        $this->import($baseGame);
+    }
+
+    public function import(string $game): void
+    {
+        /** @var string[][] $rows */
+        $rows = array_map(fn ($row) => mb_str_split($row), explode("\n", $game));
+
+        for ($y = 0; $y < count($rows); $y++) {
+            for ($x = 0; $x < count($rows[$y]); $x++) {
+                $this->cells[$y][$x] = Cell::from($rows[$y][$x]);
             }
         }
     }
 
-    public function Export(): string
+    public function export(): string
     {
         $text = "\n";
 
         foreach ($this->cells as $row) {
             /** @var Cell $col */
             foreach ($row as $col) {
-                $text .= $col->Emoji();
+                $text .= $col->value;
             }
             $text .= "\n";
         }
