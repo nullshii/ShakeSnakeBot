@@ -3,6 +3,7 @@
 namespace App\Bot\Commands;
 
 use App\Models\TelegramUser;
+use App\Services\UserService;
 use Telegram\Bot\Actions;
 use Telegram\Bot\Commands\Command;
 
@@ -11,6 +12,8 @@ class Start extends Command
     protected string $name = 'start';
     protected string $description = 'Start bot';
 
+    public function __construct(private readonly UserService $userService) {}
+
     public function handle(): void
     {
         $this->replyWithChatAction(['action' => Actions::TYPING]);
@@ -18,10 +21,7 @@ class Start extends Command
         $userId = $this->update->message->from->id;
         $username = $this->update->message->from->username;
 
-        $user = TelegramUser::firstOrCreate(
-            ['telegram_id' => $userId],
-            ['telegram_id' => $userId, 'name' => $username]
-        );
+        $user = $this->userService->FindOrCreateUser($userId, $username);
 
         if (!$user) {
             $this->replyWithMessage([
