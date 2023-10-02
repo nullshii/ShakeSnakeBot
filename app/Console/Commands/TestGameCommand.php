@@ -16,12 +16,12 @@ class TestGameCommand extends Command
     {
         $users = TelegramUser::where('is_subscribed', true)->get();
 
-        $export = $game->Export();
+
 
         foreach ($users as $user) {
             Telegram::sendMessage([
                 "chat_id" => $user->telegram_id,
-                "text" => $export
+                "text" => $game->export()
             ]);
         }
     }
