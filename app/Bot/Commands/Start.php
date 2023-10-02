@@ -11,7 +11,9 @@ class Start extends Command
     protected string $name = 'start';
     protected string $description = 'Start bot';
 
-    public function __construct(private readonly UserService $userService) {}
+    public function __construct(private readonly UserService $userService)
+    {
+    }
 
     public function handle(): void
     {

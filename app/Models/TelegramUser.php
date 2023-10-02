@@ -10,5 +10,6 @@ class TelegramUser extends Model
         'telegram_id',
         'name',
         'vote',
+        'is_subscribed'
     ];
 }
