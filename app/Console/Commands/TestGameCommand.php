@@ -16,8 +16,6 @@ class TestGameCommand extends Command
     {
         $users = TelegramUser::where('is_subscribed', true)->get();
 
-
-
         foreach ($users as $user) {
             Telegram::sendMessage([
                 "chat_id" => $user->telegram_id,

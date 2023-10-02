@@ -2,10 +2,20 @@
 
 namespace App\Enums;
 
-enum Vote : int {
-    case EMPTY = 0;
-    case UP = 1;
-    case DOWN = 2;
-    case LEFT = 3;
-    case RIGHT = 4;
+enum Vote : string {
+    case EMPTY = '';
+    case UP = 'up';
+    case DOWN = 'down';
+    case LEFT = 'left';
+    case RIGHT = 'right';
+
+    public function emoji() : string {
+        return match($this){
+            self::EMPTY => "⏺️",
+            self::UP => "🔼",
+            self::DOWN => "🔽",
+            self::LEFT => "◀️",
+            self::RIGHT => "▶️",
+        };
+    }
 }
