@@ -38,6 +38,8 @@ return [
             'commands' => [
                 \App\Bot\Commands\Start::class,
                 \App\Bot\Commands\Help::class,
+                \App\Bot\Commands\Subscribe::class,
+                \App\Bot\Commands\Unsubscribe::class,
             ],
         ],
 
