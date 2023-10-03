@@ -20,7 +20,7 @@ class Start extends Command
         $this->replyWithChatAction(['action' => Actions::TYPING]);
 
         $userId = $this->update->message->from->id;
-        $username = $this->update->message->from->username;
+        $username = $this->update->message->from->username ?? '';
 
         $user = $this->userService->FindOrCreateUser($userId, $username);
 

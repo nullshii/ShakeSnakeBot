@@ -2,25 +2,27 @@
 
 namespace App\Console\Commands;
 
-use App\Models\TelegramUser;
+use App\Enums\Vote;
 use App\Services\GameService;
 use Illuminate\Console\Command;
-use Telegram\Bot\Laravel\Facades\Telegram;
 
 class TestGameCommand extends Command
 {
     protected $signature = "game:test";
-    protected $description = "Test game to log file.";
+    protected $description = "Test game";
 
     public function handle(GameService $game): void
     {
-        $users = TelegramUser::where('is_subscribed', true)->get();
+        $game->initEmpty();
 
-        foreach ($users as $user) {
-            Telegram::sendMessage([
-                "chat_id" => $user->telegram_id,
-                "text" => $game->export()
-            ]);
+        while (true) {
+            $this->line($game->export());
+
+            $vote = Vote::from(
+                $this->anticipate('Choose direction', array_map(fn($case) => $case->value, Vote::cases()))
+            );
+
+            $game->nextVote($vote);
         }
     }
 }

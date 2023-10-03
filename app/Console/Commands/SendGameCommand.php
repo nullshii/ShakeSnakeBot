@@ -3,9 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Enums\Vote;
+use App\Models\Game;
 use App\Models\TelegramUser;
 use App\Services\GameService;
 use Illuminate\Console\Command;
+use Telegram\Bot\Keyboard\Keyboard;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class SendGameCommand extends Command
@@ -15,30 +17,47 @@ class SendGameCommand extends Command
 
     public function handle(GameService $game): void
     {
-        $allUsers = TelegramUser::all();
+        $lastGame = Game::orderBy('id', 'desc')->first();
+        $game->import($lastGame->state);
 
-        $votes = collect(["up" => 0, "down" => 0, "left" => 0, "right" => 0]);
+        $votes = collect([
+            Vote::UP->value => 0,
+            Vote::DOWN->value => 0,
+            Vote::LEFT->value => 0,
+            Vote::RIGHT->value => 0
+        ]);
 
-        foreach ($allUsers as $user) {
-            // TODO: Fix This
-            $vote = Vote::from($user->vote);
+        foreach (TelegramUser::all() as $user) {
+            $vote = Vote::from($user->vote ?? '');
 
-            if ($vote == Vote::EMPTY)
-                continue;
-
-            $votes[$vote->value]++;
+            if ($vote != Vote::EMPTY)
+                $votes[$vote->value] += 1;
         }
 
-        $values = $votes->filter(fn ($vote) => $vote == $votes->max())
-                        ->keys()
-                        ->random();
+        $valuableVote = Vote::from(
+            $votes->filter(fn($vote) => $vote == $votes->max())
+                ->keys()
+                ->random()
+        );
+
+        $game->nextVote($valuableVote);
+
+        $keyboard = new Keyboard([
+            'keyboard' => [
+                [' ', '/vote_up', ' '],
+                ['/vote_left', '/vote_down', '/vote_right']
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => false,
+            'selective' => true,
+        ]);
 
         $subscribedUsers = TelegramUser::where('is_subscribed', true)->get();
-
         foreach ($subscribedUsers as $user) {
             Telegram::sendMessage([
                 "chat_id" => $user->telegram_id,
-                "text" => $game->export()
+                "text" => $game->export(),
+                'reply_markup' => $keyboard,
             ]);
         }
     }

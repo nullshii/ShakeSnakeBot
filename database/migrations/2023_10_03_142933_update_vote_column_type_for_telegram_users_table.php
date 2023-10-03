@@ -8,14 +8,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('telegram_users', function (Blueprint $table) {
-            $table->boolean('is_subscribed')->default(false);
+            $table->string('vote', 5)->nullable()->change();
         });
     }
 
     public function down(): void
     {
         Schema::table('telegram_users', function (Blueprint $table) {
-            $table->dropColumn('is_subscribed');
+            $table->integer('vote')->default(0)->change();
         });
     }
 };
