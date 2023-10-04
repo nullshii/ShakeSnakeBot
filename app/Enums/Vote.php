@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Vector2;
+
 enum Vote : string {
     case EMPTY = '';
     case UP = 'up';
@@ -16,6 +18,16 @@ enum Vote : string {
             self::DOWN => "🔽",
             self::LEFT => "◀️",
             self::RIGHT => "▶️",
+        };
+    }
+
+    public function toDirection(): Vector2 {
+        return match ($this){
+            self::EMPTY => Vector2::zero(),
+            self::UP => Vector2::up(),
+            self::DOWN => Vector2::down(),
+            self::LEFT => Vector2::left(),
+            self::RIGHT => Vector2::right(),
         };
     }
 }

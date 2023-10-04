@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\Cell;
 use App\Enums\Vote;
 use App\Services\GameService;
+use App\Vector2;
 use Illuminate\Console\Command;
 
 class TestGameCommand extends Command
@@ -14,6 +16,8 @@ class TestGameCommand extends Command
     public function handle(GameService $game): void
     {
         $game->initEmpty();
+
+        $this->line(var_export($game->snake, true));
 
         while (true) {
             $this->line($game->export());
