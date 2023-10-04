@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use App\Vector2;
+use Exception;
 
 enum Cell: string
 {
