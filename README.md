@@ -13,9 +13,13 @@ That bot is available [here](https://t.me/shake_snake_bot).
 - Install [composer](https://getcomposer.org/download/)
 - Copy `.env.example` as `.env` file
 - Add your token to `TELEGRAM_BOT_TOKEN` key
-- Configure database `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
-- Run bot with command below:
+- Configure database keys (`DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`)
+- Migrate database with command
+```shell
+php artisan migrate
+```
 
+- Run bot with command below:
 ```shell
 php artisan bot:run 
 ```
