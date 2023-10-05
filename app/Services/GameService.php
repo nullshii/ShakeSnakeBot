@@ -6,7 +6,6 @@ use App\Enums\Cell;
 use App\Enums\Vote;
 use App\Vector2;
 use Exception;
-use Illuminate\Support\Facades\Log;
 
 class GameService
 {
@@ -55,7 +54,7 @@ class GameService
 
     public function export(): string
     {
-        $text = "\n";
+        $text = "";
 
         foreach ($this->cells as $row) {
             /** @var Cell $col */
@@ -104,7 +103,6 @@ class GameService
         $pos = $vector2->clone();
 
         $cell = $this->getCell($vector2);
-        Log::info('Start from: ' . $cell->value);
 
         $pos->add(
             match ($cell) {
@@ -115,8 +113,6 @@ class GameService
                 default => Vector2::zero()
             }
         );
-
-        Log::info('Find that: ' . $this->getCell($pos)->value);
 
         return $pos;
     }

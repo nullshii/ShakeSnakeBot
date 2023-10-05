@@ -8,10 +8,7 @@ class Game extends Model
 {
     protected $fillable = [
         'state',
-        'vote_up',
-        'vote_down',
-        'vote_left',
-        'vote_right',
+        'vote',
         'is_over',
     ];
 }

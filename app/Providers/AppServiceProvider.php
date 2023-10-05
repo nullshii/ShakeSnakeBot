@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         $this->app->singleton(UserService::class);
-        $this->app->singleton(GameService::class);
+        $this->app->bind(GameService::class);
     }
 
     /**

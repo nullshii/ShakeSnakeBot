@@ -7,6 +7,7 @@ use App\Models\Game;
 use App\Models\TelegramUser;
 use App\Services\GameService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Keyboard\Keyboard;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
@@ -32,6 +33,8 @@ class SendGameCommand extends Command
 
             if ($vote != Vote::EMPTY)
                 $votes[$vote->value] += 1;
+
+            $user->update(['vote' => null]);
         }
 
         $valuableVote = Vote::from(
@@ -40,7 +43,16 @@ class SendGameCommand extends Command
                 ->random()
         );
 
+        $lastGame->update(['vote' => $valuableVote->value]);
+
         $game->nextVote($valuableVote);
+        $export = $game->export();
+
+        Log::info($export);
+
+        $nextGame = new Game();
+        $nextGame->state = $export;
+        $nextGame->save();
 
         $keyboard = new Keyboard([
             'keyboard' => [
@@ -56,7 +68,7 @@ class SendGameCommand extends Command
         foreach ($subscribedUsers as $user) {
             Telegram::sendMessage([
                 "chat_id" => $user->telegram_id,
-                "text" => $game->export(),
+                "text" => $export,
                 'reply_markup' => $keyboard,
             ]);
         }

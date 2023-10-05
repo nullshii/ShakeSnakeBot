@@ -7,6 +7,7 @@ use App\Enums\Vote;
 use App\Services\GameService;
 use App\Vector2;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class TestGameCommand extends Command
 {
@@ -17,10 +18,8 @@ class TestGameCommand extends Command
     {
         $game->initEmpty();
 
-        $this->line(var_export($game->snake, true));
-
         while (true) {
-            $this->line($game->export());
+            Log::info($game->export());
 
             $vote = Vote::from(
                 $this->anticipate('Choose direction', array_map(fn($case) => $case->value, Vote::cases()))
