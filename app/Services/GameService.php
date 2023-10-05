@@ -45,7 +45,9 @@ class GameService
         while (true) {
             $otherSide = $this->getOppositeSide($otherSide);
 
-            if (in_array($this->getCell($otherSide), [Cell::EMPTY, Cell::WALL]))
+            if (!in_array($this->getCell($otherSide), [
+                Cell::SNAKE_BODY_UP, Cell::SNAKE_BODY_DOWN,
+                Cell::SNAKE_BODY_LEFT, Cell::SNAKE_BODY_RIGHT]))
                 break;
 
             $this->snake[] = $otherSide;
