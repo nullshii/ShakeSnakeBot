@@ -44,6 +44,7 @@ return [
                 \App\Bot\Commands\Vote\VoteDown::class,
                 \App\Bot\Commands\Vote\VoteLeft::class,
                 \App\Bot\Commands\Vote\VoteRight::class,
+                \App\Bot\Commands\Vote\UnVote::class,
             ],
         ],
 
