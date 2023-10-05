@@ -19,13 +19,16 @@ class TestGameCommand extends Command
         $game->initEmpty();
 
         while (true) {
-            Log::info($game->export());
+            $this->line($game->export());
 
             $vote = Vote::from(
                 $this->anticipate('Choose direction', array_map(fn($case) => $case->value, Vote::cases()))
             );
 
-            $game->nextVote($vote);
+            if ($game->nextVote($vote)) {
+                $this->line("game over");
+                break;
+            }
         }
     }
 }

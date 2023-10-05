@@ -22,7 +22,7 @@ class GameService
 
     public function initEmpty(): void
     {
-        $baseGame = "🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🔼🟫🟥\n🟥🟫🟫🟫🟫🟫🟫⬆🟫🟥\n🟥🟫🟫🟫🟫➡➡➡🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥\n";
+        $baseGame = "🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🔼🟫🟥\n🟥🟫🟫🟫🟫🟫🟫⬆🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🔴🟫🟫🟫🟫🟫🟥\n🟥🟫🟫🟫🟫🟫🟫🟫🟫🟥\n🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥\n";
 
         $this->import($baseGame);
     }
@@ -67,16 +67,55 @@ class GameService
         return $text;
     }
 
-    public function nextVote(Vote $vote): void
+    public function nextVote(Vote $vote): bool
     {
-        $endOfSnake = array_pop($this->snake);
-        $this->setCell($endOfSnake, Cell::EMPTY);
+        $voteDirection = $vote->toDirection();
 
-        $headPosition = $this->getSnakeHeadPosition();
-        $nextPosition = $headPosition->addAsNew($vote->toDirection());
-        $this->convertHeadToBody($headPosition);
+        $head = $this->getSnakeHeadPosition();
+        $nextPosition = $head->addAsNew($voteDirection);
+        $nextCell = $this->getCell($nextPosition);
+
+        if ($nextCell == Cell::WALL) {
+            return true;
+        }
+
+        if (in_array($nextCell, [
+            Cell::SNAKE_BODY_UP, Cell::SNAKE_BODY_DOWN,
+            Cell::SNAKE_BODY_LEFT, Cell::SNAKE_BODY_RIGHT
+        ])) {
+            return true;
+        }
+
+        if ($nextCell == Cell::APPLE) {
+            $cells = collect($this->cells);
+            $newCells = collect();
+            $cells->each(function ($row, $y) use ($newCells) {
+                collect($row)->each(fn($col, $x) => $newCells->put("$x,$y", $col));
+            });
+
+            $randomCellStr = $newCells->filter(fn($cell) => $cell == Cell::EMPTY)
+                ->keys();
+
+            if ($randomCellStr->count() == 0) {
+                return true;
+            }
+
+            $randomCellStr = $randomCellStr->random();
+
+            $randomCell = explode(',', $randomCellStr);
+
+            $this->setCell(new Vector2($randomCell[0], $randomCell[1]), Cell::APPLE);
+
+        } else {
+            $endOfSnake = array_pop($this->snake);
+            $this->setCell($endOfSnake, Cell::EMPTY);
+        }
+
+        $this->convertHeadToBody($head);
         $this->setCell($nextPosition, Cell::headFromVote($vote));
         array_unshift($this->snake, $nextPosition);
+
+        return false;
     }
 
     private function getSnakeHeadPosition(): Vector2

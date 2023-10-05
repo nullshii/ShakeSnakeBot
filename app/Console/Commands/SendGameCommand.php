@@ -19,7 +19,12 @@ class SendGameCommand extends Command
     public function handle(GameService $game): void
     {
         $lastGame = Game::orderBy('id', 'desc')->first();
-        $game->import($lastGame->state);
+
+        if ($lastGame && !$lastGame->is_over) {
+            $game->import($lastGame->state);
+        } else {
+            $game->initEmpty();
+        }
 
         $votes = collect([
             Vote::UP->value => 0,
@@ -43,14 +48,29 @@ class SendGameCommand extends Command
                 ->random()
         );
 
-        $lastGame->update(['vote' => $valuableVote->value]);
-
-        $game->nextVote($valuableVote);
-        $export = $game->export();
-
-        Log::info($export);
+        $lastGame?->update(['vote' => $valuableVote->value]);
+        $subscribedUsers = TelegramUser::where('is_subscribed', true)->get();
 
         $nextGame = new Game();
+
+
+        if ($game->nextVote($valuableVote)){
+            foreach ($subscribedUsers as $user) {
+                Telegram::sendMessage([
+                    "chat_id" => $user->telegram_id,
+                    "text" => "Game over",
+                    'reply_markup' => Keyboard::remove(),
+                ]);
+            }
+
+            $nextGame->state = $game->export();
+            $nextGame->is_over = true;
+            $nextGame->save();
+
+            return;
+        }
+
+        $export = $game->export();
         $nextGame->state = $export;
         $nextGame->save();
 
@@ -64,7 +84,6 @@ class SendGameCommand extends Command
             'selective' => true,
         ]);
 
-        $subscribedUsers = TelegramUser::where('is_subscribed', true)->get();
         foreach ($subscribedUsers as $user) {
             Telegram::sendMessage([
                 "chat_id" => $user->telegram_id,
