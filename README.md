@@ -11,6 +11,10 @@ That bot is available [here](https://t.me/shake_snake_bot).
 ## How to run
 - Install [requirements for Laravel](https://laravel.com/docs/10.x/deployment#server-requirements) 
 - Install [composer](https://getcomposer.org/download/)
+- Install dependencies
+```shell
+composer install
+```
 - Copy `.env.example` as `.env` file
 - Add your token to `TELEGRAM_BOT_TOKEN` key
 - Configure database keys (`DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`)
