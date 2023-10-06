@@ -25,7 +25,7 @@ composer install
 - Add your token to `TELEGRAM_BOT_TOKEN` key
 - Configure database keys (`DB_CONNECTION`, `DB_HOST`, 
 `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`)
-- Migrate database with command
+- Migrate database with command below:
 
 ```shell
 php artisan migrate
@@ -36,9 +36,9 @@ php artisan migrate
 ```shell
 php artisan bot:run 
 ```
-
+---
 You also need the task scheduler to run `php artisan schedule:run` every minute.
-For example, you can use `cron`.
+For example, you can use `cron`:
 
 ```shell
 crontab -e
