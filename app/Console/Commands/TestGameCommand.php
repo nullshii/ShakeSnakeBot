@@ -2,12 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\Cell;
-use App\Enums\Vote;
+use App\Enums\Direction;
 use App\Services\GameService;
-use App\Vector2;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class TestGameCommand extends Command
 {
@@ -16,19 +13,18 @@ class TestGameCommand extends Command
 
     public function handle(GameService $game): void
     {
-        $game->initEmpty();
-
         while (true) {
             $this->line($game->export());
 
-            $vote = Vote::from(
-                $this->anticipate('Choose direction', array_map(fn($case) => $case->value, Vote::cases()))
+            $name = $this->anticipate(
+                'Choose direction',
+                array_map(fn(Direction $case) => mb_strtolower($case->name), Direction::cases())
             );
 
-            if ($game->nextVote($vote)) {
-                $this->line("game over");
-                break;
-            }
+            $direction = collect(Direction::cases())
+                ->first(fn(Direction $case) => $case->name == mb_strtoupper($name));
+
+            $game->move($direction);
         }
     }
 }

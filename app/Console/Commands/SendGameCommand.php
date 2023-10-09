@@ -6,6 +6,7 @@ use App\Enums\Vote;
 use App\Models\Game;
 use App\Models\TelegramUser;
 use App\Services\GameService;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Keyboard\Keyboard;
@@ -20,13 +21,11 @@ class SendGameCommand extends Command
     {
         $lastGame = Game::orderBy('id', 'desc')->first();
 
-        if ($lastGame && !$lastGame->is_over) {
+        if ($lastGame)
             $game->import($lastGame->state);
-        } else {
-            $game->initEmpty();
-        }
 
         $votes = collect([
+            Vote::EMPTY->value => 0,
             Vote::UP->value => 0,
             Vote::DOWN->value => 0,
             Vote::LEFT->value => 0,
@@ -34,49 +33,44 @@ class SendGameCommand extends Command
         ]);
 
         foreach (TelegramUser::all() as $user) {
-            $vote = Vote::from($user->vote ?? '');
-
-            if ($vote != Vote::EMPTY)
-                $votes[$vote->value] += 1;
-
-            $user->update(['vote' => null]);
+            $vote = Vote::from($user->vote ?? 'empty');
+            $votes[$vote->value] += 1;
+            $user->vote = null;
+            $user->save();
         }
 
-        $valuableVote = Vote::from(
-            $votes->filter(fn($vote) => $vote == $votes->max())
-                ->keys()
-                ->random()
+        $filteredVotes = $votes->filter(fn($vote, $type) => $type != Vote::EMPTY->value);
+
+        if ($filteredVotes->sum() > 0) {
+            $valuableVote = Vote::from(
+                $filteredVotes
+                    ->filter(fn($vote) => $vote == $filteredVotes->max())
+                    ->keys()
+                    ->random()
+            );
+        } else {
+            $valuableVote = Vote::EMPTY;
+        }
+
+        if ($lastGame) {
+            $lastGame->vote = $valuableVote->value;
+            $lastGame->save();
+        }
+
+        $game->move($valuableVote == Vote::EMPTY
+            ? $game->getCurrentDirection()
+            : $valuableVote->asDirection()
         );
 
-        $lastGame?->update(['vote' => $valuableVote->value]);
-        $subscribedUsers = TelegramUser::where('is_subscribed', true)->get();
+        $export = $game->export();
 
         $nextGame = new Game();
-
-
-        if ($game->nextVote($valuableVote)){
-            foreach ($subscribedUsers as $user) {
-                Telegram::sendMessage([
-                    "chat_id" => $user->telegram_id,
-                    "text" => "Game over",
-                    'reply_markup' => Keyboard::remove(),
-                ]);
-            }
-
-            $nextGame->state = $game->export();
-            $nextGame->is_over = true;
-            $nextGame->save();
-
-            return;
-        }
-
-        $export = $game->export();
         $nextGame->state = $export;
         $nextGame->save();
 
         $keyboard = new Keyboard([
             'keyboard' => [
-                [' ', '/vote_up', ' '],
+                ['/help', '/vote_up', '/unvote'],
                 ['/vote_left', '/vote_down', '/vote_right']
             ],
             'resize_keyboard' => true,
@@ -84,12 +78,17 @@ class SendGameCommand extends Command
             'selective' => true,
         ]);
 
+        $subscribedUsers = TelegramUser::where('is_subscribed', true)->get();
+
         foreach ($subscribedUsers as $user) {
-            Telegram::sendMessage([
-                "chat_id" => $user->telegram_id,
-                "text" => $export,
-                'reply_markup' => $keyboard,
-            ]);
+            try {
+                Telegram::sendMessage([
+                    "chat_id" => $user->telegram_id,
+                    "text" => $export,
+                    'reply_markup' => $keyboard,
+                ]);
+            } catch (Exception) {
+            }
         }
     }
 }

@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Events\EatEvent;
+use App\Events\LoseEvent;
+use App\Events\WinEvent;
+use App\Listeners\EatEventListener;
+use App\Listeners\LoseEventListener;
+use App\Listeners\WinEventListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -17,6 +23,15 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        WinEvent::class => [
+            WinEventListener::class,
+        ],
+        EatEvent::class => [
+            EatEventListener::class,
+        ],
+        LoseEvent::class => [
+            LoseEventListener::class,
         ],
     ];
 

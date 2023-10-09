@@ -48,5 +48,7 @@ class VoteBase extends Command
         ]);
 
         $user->update(['vote' => $this->vote]);
+
+
     }
 }
