@@ -42,7 +42,7 @@ class UnVote extends Command
         }
 
         $this->replyWithMessage([
-            'text' => "$name unvoted",
+            'text' => "$name removed vote",
             'reply_markup' => Keyboard::remove(['selective' => true])
         ]);
 

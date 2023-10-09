@@ -2,17 +2,19 @@
 
 namespace App\Enums;
 
-use App\Vector2;
+use Exception;
 
-enum Vote : string {
-    case EMPTY = '';
+enum Vote: string
+{
+    case EMPTY = 'empty';
     case UP = 'up';
     case DOWN = 'down';
     case LEFT = 'left';
     case RIGHT = 'right';
 
-    public function emoji() : string {
-        return match($this){
+    public function emoji(): string
+    {
+        return match ($this) {
             self::EMPTY => "⏺️",
             self::UP => "🔼",
             self::DOWN => "🔽",
@@ -21,13 +23,14 @@ enum Vote : string {
         };
     }
 
-    public function toDirection(): Vector2 {
-        return match ($this){
-            self::EMPTY => Vector2::zero(),
-            self::UP => Vector2::up(),
-            self::DOWN => Vector2::down(),
-            self::LEFT => Vector2::left(),
-            self::RIGHT => Vector2::right(),
+    public function asDirection(): Direction
+    {
+        return match ($this) {
+            self::EMPTY => throw new Exception("Direction can not be empty"),
+            self::UP => Direction::UP,
+            self::DOWN => Direction::DOWN,
+            self::LEFT => Direction::LEFT,
+            self::RIGHT => Direction::RIGHT,
         };
     }
 }
