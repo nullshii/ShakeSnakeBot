@@ -11,6 +11,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Message;
+use Telegram\Bot\Objects\Poll;
 
 class SendGameCommand extends Command
 {
@@ -24,10 +25,16 @@ class SendGameCommand extends Command
         if ($lastGame)
             $game->import($lastGame->state);
 
-        $poll = Telegram::stopPoll([
-            'chat_id' => Cache::get('last_poll_chat_id'),
-            'message_id' => Cache::get('last_poll_message_id'),
-        ]);
+        /** @var Poll|null $poll */
+        $poll = null;
+
+        try {
+            $poll = Telegram::stopPoll([
+                'chat_id' => Cache::get('last_poll_chat_id'),
+                'message_id' => Cache::get('last_poll_message_id'),
+            ]);
+        } catch (Exception) {
+        }
 
         $votes = collect([
             Vote::EMPTY->value => 0,
@@ -37,9 +44,11 @@ class SendGameCommand extends Command
             Vote::RIGHT->value => 0
         ]);
 
-        foreach ($poll->options as $option) {
-            $vote = Vote::from($option->text);
-            $votes[$vote->value] = $option->voterCount;
+        if ($poll) {
+            foreach ($poll->options as $option) {
+                $vote = Vote::from($option->text);
+                $votes[$vote->value] = $option->voterCount;
+            }
         }
 
         $filteredVotes = $votes->filter(fn($vote, $type) => $type != Vote::EMPTY->value);
