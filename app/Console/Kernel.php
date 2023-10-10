@@ -12,7 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-//        $schedule->command('game:send')->everyMinute();
+        $schedule->command('game:send')->everyMinute();
     }
 
     /**
