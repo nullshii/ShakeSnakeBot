@@ -8,9 +8,9 @@ use App\Models\TelegramUser;
 use App\Services\GameService;
 use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
-use Telegram\Bot\Keyboard\Keyboard;
+use Illuminate\Support\Facades\Cache;
 use Telegram\Bot\Laravel\Facades\Telegram;
+use Telegram\Bot\Objects\Message;
 
 class SendGameCommand extends Command
 {
@@ -24,6 +24,11 @@ class SendGameCommand extends Command
         if ($lastGame)
             $game->import($lastGame->state);
 
+        $poll = Telegram::stopPoll([
+            'chat_id' => Cache::get('last_poll_chat_id'),
+            'message_id' => Cache::get('last_poll_message_id'),
+        ]);
+
         $votes = collect([
             Vote::EMPTY->value => 0,
             Vote::UP->value => 0,
@@ -32,11 +37,9 @@ class SendGameCommand extends Command
             Vote::RIGHT->value => 0
         ]);
 
-        foreach (TelegramUser::all() as $user) {
-            $vote = Vote::from($user->vote ?? 'empty');
-            $votes[$vote->value] += 1;
-            $user->vote = null;
-            $user->save();
+        foreach ($poll->options as $option) {
+            $vote = Vote::from($option->text);
+            $votes[$vote->value] = $option->voterCount;
         }
 
         $filteredVotes = $votes->filter(fn($vote, $type) => $type != Vote::EMPTY->value);
@@ -68,27 +71,42 @@ class SendGameCommand extends Command
         $nextGame->state = $export;
         $nextGame->save();
 
-        $keyboard = new Keyboard([
-            'keyboard' => [
-                ['/help', '/vote_up', '/unvote'],
-                ['/vote_left', '/vote_down', '/vote_right']
-            ],
-            'resize_keyboard' => true,
-            'one_time_keyboard' => false,
-            'selective' => true,
-        ]);
-
         $subscribedUsers = TelegramUser::where('is_subscribed', true)->get();
+
+        /** @var Message $pollMessage */
+        $pollMessage = null;
 
         foreach ($subscribedUsers as $user) {
             try {
                 Telegram::sendMessage([
                     "chat_id" => $user->telegram_id,
                     "text" => $export,
-                    'reply_markup' => $keyboard,
                 ]);
+
+                if ($pollMessage) {
+                    Telegram::forwardMessage([
+                        'chat_id' => $user->telegram_id,
+                        'from_chat_id' => $pollMessage->chat->id,
+                        'message_id' => $pollMessage->messageId,
+                    ]);
+                } else {
+                    $cases = collect(Vote::cases())
+                        ->filter(fn(Vote $vote) => $vote != Vote::EMPTY)
+                        ->values()
+                        ->toArray();
+
+                    $pollMessage = Telegram::sendPoll([
+                        'chat_id' => $user->telegram_id,
+                        'question' => 'Vote for next move',
+                        'options' => $cases,
+                        'is_anonymous' => false,
+                    ]);
+                }
             } catch (Exception) {
             }
         }
+
+        Cache::put('last_poll_message_id', $pollMessage->messageId);
+        Cache::put('last_poll_chat_id', $pollMessage->chat->id);
     }
 }

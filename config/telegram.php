@@ -40,11 +40,6 @@ return [
                 \App\Bot\Commands\Help::class,
                 \App\Bot\Commands\Subscribe::class,
                 \App\Bot\Commands\Unsubscribe::class,
-                \App\Bot\Commands\Vote\VoteUp::class,
-                \App\Bot\Commands\Vote\VoteDown::class,
-                \App\Bot\Commands\Vote\VoteLeft::class,
-                \App\Bot\Commands\Vote\VoteRight::class,
-                \App\Bot\Commands\Vote\UnVote::class,
             ],
         ],
 
