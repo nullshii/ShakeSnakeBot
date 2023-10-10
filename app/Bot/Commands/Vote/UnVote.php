@@ -43,7 +43,15 @@ class UnVote extends Command
 
         $this->replyWithMessage([
             'text' => "$name removed vote",
-            'reply_markup' => Keyboard::remove(['selective' => true])
+            'reply_markup' => new Keyboard([
+                'keyboard' => [
+                    ['/help', '/vote_up', '/unvote'],
+                    ['/vote_left', '/vote_down', '/vote_right']
+                ],
+                'resize_keyboard' => true,
+                'one_time_keyboard' => false,
+                'selective' => true,
+            ])
         ]);
 
         $user->update(['vote' => null]);
