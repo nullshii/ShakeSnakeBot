@@ -6,7 +6,7 @@ enum CellType: string
 {
     case EMPTY = "🟫";
     case WALL = "🟥";
-    case APPLE = "🔴";
+    case APPLE = "🍎";
     case SNAKE_BODY_UP = "⬆";
     case SNAKE_BODY_DOWN = "⬇";
     case SNAKE_BODY_LEFT = "⬅";
