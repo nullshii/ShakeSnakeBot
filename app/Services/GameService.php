@@ -6,15 +6,12 @@ use App\Enums\CellType;
 use App\Enums\Direction;
 use App\Game\Map;
 use App\Game\Snake;
-use App\Models\TelegramUser;
-use Exception;
-use Telegram\Bot\Keyboard\Keyboard;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class GameService
 {
-    private Map $map;
-    private Snake $snake;
+    public Map $map;
+    public Snake $snake;
 
     public function __construct()
     {
@@ -24,18 +21,12 @@ class GameService
 
     public function win(): void
     {
-        $subscribedUsers = TelegramUser::where('is_subscribed', true)->get();
+        $channelId = config('telegram.channelId');
 
-        try {
-            foreach ($subscribedUsers as $user) {
-                Telegram::sendMessage([
-                    "chat_id" => $user->telegram_id,
-                    "text" => "You win",
-                    'reply_markup' => Keyboard::remove(),
-                ]);
-            }
-        } catch (Exception) {
-        }
+        Telegram::sendMessage([
+            "chat_id" => $channelId,
+            "text" => "You win",
+        ]);
 
         $this->gameOver();
     }
@@ -43,18 +34,12 @@ class GameService
 
     public function lose(): void
     {
-        $subscribedUsers = TelegramUser::where('is_subscribed', true)->get();
+        $channelId = config('telegram.channelId');
 
-        try {
-            foreach ($subscribedUsers as $user) {
-                Telegram::sendMessage([
-                    "chat_id" => $user->telegram_id,
-                    "text" => "You lose",
-                    'reply_markup' => Keyboard::remove(),
-                ]);
-            }
-        } catch (Exception) {
-        }
+        Telegram::sendMessage([
+            "chat_id" => $channelId,
+            "text" => "You lose",
+        ]);
 
         $this->gameOver();
     }
@@ -73,8 +58,7 @@ class GameService
     {
         $headCell = $this->map->getCellAtPosition($this->snake->getHeadPosition());
 
-        return match ($headCell->getCellType())
-        {
+        return match ($headCell->getCellType()) {
             default => Direction::UP,
             CellType::SNAKE_HEAD_DOWN => Direction::DOWN,
             CellType::SNAKE_HEAD_LEFT => Direction::LEFT,
