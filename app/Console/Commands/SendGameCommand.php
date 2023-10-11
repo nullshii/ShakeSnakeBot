@@ -4,13 +4,11 @@ namespace App\Console\Commands;
 
 use App\Enums\Vote;
 use App\Models\Game;
-use App\Models\TelegramUser;
 use App\Services\GameService;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Telegram\Bot\Laravel\Facades\Telegram;
-use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\Poll;
 
 class SendGameCommand extends Command
@@ -80,40 +78,24 @@ class SendGameCommand extends Command
         $nextGame->state = $export;
         $nextGame->save();
 
-        $subscribedUsers = TelegramUser::where('is_subscribed', true)->get();
+        $channelId = config('telegram.channelId');
 
-        /** @var Message $pollMessage */
-        $pollMessage = null;
+        Telegram::sendMessage([
+            "chat_id" => $channelId,
+            "text" => $export,
+        ]);
 
-        foreach ($subscribedUsers as $user) {
-            try {
-                Telegram::sendMessage([
-                    "chat_id" => $user->telegram_id,
-                    "text" => $export,
-                ]);
+        $cases = collect(Vote::cases())
+            ->filter(fn(Vote $vote) => $vote != Vote::EMPTY)
+            ->values()
+            ->toArray();
 
-                if ($pollMessage) {
-                    Telegram::forwardMessage([
-                        'chat_id' => $user->telegram_id,
-                        'from_chat_id' => $pollMessage->chat->id,
-                        'message_id' => $pollMessage->messageId,
-                    ]);
-                } else {
-                    $cases = collect(Vote::cases())
-                        ->filter(fn(Vote $vote) => $vote != Vote::EMPTY)
-                        ->values()
-                        ->toArray();
+        $pollMessage = Telegram::sendPoll([
+            'chat_id' => $channelId,
+            'question' => 'Vote for next move',
+            'options' => $cases,
+        ]);
 
-                    $pollMessage = Telegram::sendPoll([
-                        'chat_id' => $user->telegram_id,
-                        'question' => 'Vote for next move',
-                        'options' => $cases,
-                        'is_anonymous' => false,
-                    ]);
-                }
-            } catch (Exception) {
-            }
-        }
 
         Cache::put('last_poll_message_id', $pollMessage->messageId);
         Cache::put('last_poll_chat_id', $pollMessage->chat->id);

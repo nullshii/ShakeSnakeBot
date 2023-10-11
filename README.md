@@ -5,7 +5,7 @@
 
 This is the implementation of the snake game within the Telegram bot.
 Every minute, it collects votes from all users and submits the next move based on those votes.
-That bot is available [here](https://t.me/shake_snake_bot).
+That bot is available [here](https://t.me/shake_snake_group).
 
 ## Screenshots
 
@@ -23,6 +23,7 @@ composer install
 
 - Copy `.env.example` as `.env` file
 - Add your token to `TELEGRAM_BOT_TOKEN` key
+- Add your channel id to `TELEGRAM_CHANNEL_ID` key
 - Configure database keys (`DB_CONNECTION`, `DB_HOST`, 
 `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`)
 - Migrate database with command below:
