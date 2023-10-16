@@ -53,6 +53,11 @@ class Snake
         return $this->snake[0];
     }
 
+    public function getUnderTailPosition(): Vector2
+    {
+        return $this->snake[array_key_last($this->snake) - 1];
+    }
+
     public function getTailPosition(): Vector2
     {
         return $this->snake[array_key_last($this->snake)];

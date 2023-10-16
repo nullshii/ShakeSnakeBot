@@ -30,16 +30,19 @@ class Renderer
      */
     public function render(): Imagick
     {
+        $map = $this->gameService->map;
+        $snake = $this->gameService->snake;
+
         $img = new Imagick();
-        $imageSize = 64 * $this->gameService->map->size;
+        $imageSize = 64 * $map->size; // Images are 64 x 64 pixels
         $img->newImage($imageSize, $imageSize, new ImagickPixel("white"), "png");
 
-        $tailPosition = $this->gameService->snake->getTailPosition();
+        $tailPosition = $snake->getTailPosition();
 
-        for ($y = 0; $y < $this->gameService->map->size; $y++) {
-            for ($x = 0; $x < $this->gameService->map->size; $x++) {
+        for ($y = 0; $y < $map->size; $y++) {
+            for ($x = 0; $x < $map->size; $x++) {
                 $position = new Vector2($x, $y);
-                $cell = $this->gameService->map->getCellAtPosition($position);
+                $cell = $map->getCellAtPosition($position);
 
                 $isLast = $position->matches($tailPosition);
 
@@ -56,12 +59,12 @@ class Renderer
                     default => null,
                 };
 
-                $rotation = match ($cell->getCellType()) {
-                    CellType::SNAKE_BODY_DOWN, CellType::SNAKE_HEAD_DOWN => 180,
-                    CellType::SNAKE_BODY_LEFT, CellType::SNAKE_HEAD_LEFT => 270,
-                    CellType::SNAKE_BODY_RIGHT, CellType::SNAKE_HEAD_RIGHT => 90,
-                    default => 0,
-                };
+                $rotation = $this->getRotation($cell->getCellType());
+
+                if ($position->matches($snake->getTailPosition()))
+                {
+                    $rotation = $this->getRotation($map->getCellAtPosition($snake->getUnderTailPosition())->getCellType());
+                }
 
                 if ($cellImage) {
                     $cellImage->rotateImage("white", $rotation);
@@ -72,5 +75,15 @@ class Renderer
         }
 
         return $img;
+    }
+
+    private function getRotation(CellType $cellType): int
+    {
+        return match ($cellType) {
+            CellType::SNAKE_BODY_DOWN, CellType::SNAKE_HEAD_DOWN => 180,
+            CellType::SNAKE_BODY_LEFT, CellType::SNAKE_HEAD_LEFT => 270,
+            CellType::SNAKE_BODY_RIGHT, CellType::SNAKE_HEAD_RIGHT => 90,
+            default => 0,
+        };
     }
 }
