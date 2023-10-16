@@ -8,7 +8,7 @@ use Imagick;
 use ImagickException;
 use ImagickPixel;
 
-readonly class Renderer
+class Renderer
 {
     private string $headPath;
     private string $bodyPath;
@@ -16,13 +16,13 @@ readonly class Renderer
     private string $wallPath;
     private string $applePath;
 
-    public function __construct(private GameService $gameService)
+    public function __construct(private readonly GameService $gameService)
     {
-        $this->headPath = resource_path("images/snake/head.png");
-        $this->bodyPath = resource_path("images/snake/body.png");
-        $this->tailPath = resource_path("images/snake/tail.png");
-        $this->wallPath = resource_path("images/snake/wall.png");
-        $this->applePath = resource_path("images/snake/apple.png");
+        $this->headPath = resource_path("images/snake/Head.png");
+        $this->bodyPath = resource_path("images/snake/Body.png");
+        $this->tailPath = resource_path("images/snake/Tail.png");
+        $this->wallPath = resource_path("images/snake/Wall.png");
+        $this->applePath = resource_path("images/snake/Apple.png");
     }
 
     /**
