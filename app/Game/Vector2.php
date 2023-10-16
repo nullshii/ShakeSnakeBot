@@ -56,4 +56,9 @@ class Vector2
             $this->y + $vector2->y
         );
     }
+
+    public function matches(Vector2 $vector2): bool
+    {
+        return $this->x == $vector2->x && $this->y == $vector2->y;
+    }
 }

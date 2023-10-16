@@ -53,6 +53,11 @@ class Snake
         return $this->snake[0];
     }
 
+    public function getTailPosition(): Vector2
+    {
+        return $this->snake[array_key_last($this->snake)];
+    }
+
     public function move(Direction $direction): void
     {
         $headPosition = $this->snake[0];
